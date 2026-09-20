@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tributos-postgres
+    environment:
+      POSTGRES_DB: tributos_municipales
+      POSTGRES_USER: "tributo"
+      POSTGRES_PASSWORD: "1234"
+    ports:
+      - "5433:5432"
+    volumes:
+      - tributos_pgdata:/var/lib/postgresql/data
+
+volumes:
+  tributos_pgdata:

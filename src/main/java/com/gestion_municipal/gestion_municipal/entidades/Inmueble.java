@@ -41,6 +41,6 @@ public class Inmueble {
 
     @ManyToOne(fetch = FetchType.LAZY) // Muchos inmuebles a un contribuyente, ponemos lazy ya que no necesitamos a los contribuyentes, eager traeria todos //
     @JoinColumn(name = "contribuyente_id", nullable = false) // nueva columna en la tabla con id del contribuyente)
-    @JsonBackReference("contribuyente_inmuebles") // Para no crear un bucle infinito al serailizar la lista de inmuebles con su contribuyente, cortamos al seralizar el inmueble)
+    @JsonBackReference("contribuyente-inmuebles") // Para no crear un bucle infinito al serailizar la lista de inmuebles con su contribuyente, cortamos al seralizar el inmueble)
     private Contribuyente contribuyente;
 }
