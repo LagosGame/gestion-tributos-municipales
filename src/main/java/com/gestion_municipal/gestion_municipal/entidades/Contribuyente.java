@@ -2,6 +2,7 @@ package com.gestion_municipal.gestion_municipal.entidades;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Entity // Es una tabla//
 @Table(name = "contribuyentes") // Como se llama//
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})//hacer ihnorar a Jackson los campos internos de Hibernate//
 @Data // Lombok para no escribir set, get etc...//
 @NoArgsConstructor //Constructores vacios//
 @AllArgsConstructor // COnstructores con campos//

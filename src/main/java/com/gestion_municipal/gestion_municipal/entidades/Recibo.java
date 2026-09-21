@@ -1,6 +1,7 @@
 package com.gestion_municipal.gestion_municipal.entidades;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "recibos")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
