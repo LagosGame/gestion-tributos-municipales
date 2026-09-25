@@ -26,7 +26,19 @@ public class RecargoService {
         this.recargoRepository = recargoRepository;
     }
 
+    // calcula el recargo Y LO GUARDA en base de datos, usar solo al registrar un pago real//
     public Recargo calcularRecargo(Recibo recibo, LocalDate fechaPagoReal){
+        Recargo recargo = calcular(recibo, fechaPagoReal);
+        if (recargo == null) return null;
+        return recargoRepository.save(recargo);
+    }
+
+    // calcula el recargo SIN GUARDAR nada,usar para previsualizar cuanto se deberia pagar//
+    public Recargo simularRecargo(Recibo recibo, LocalDate fechaPagoPrevista){
+        return calcular(recibo, fechaPagoPrevista);
+    }
+
+    private Recargo calcular(Recibo recibo, LocalDate fechaPagoReal){
         if (!fechaPagoReal.isAfter(recibo.getFechaVencimiento())){//si se paga antes de fecha no hay intereses//
             return null;
         }
@@ -35,19 +47,19 @@ public class RecargoService {
         boolean apremioNotificado = fechaApremio != null && !fechaPagoReal.isBefore(fechaApremio);//fecha apremio no es null y fecha de pago no es anterior a la de apremio ( mismo dia o despues)//
 
         if (!apremioNotificado){//5%//
-            return construirRecargo(recibo, Recargo.TipoRecargo.EJECUTIVO,
+            return construir(recibo, Recargo.TipoRecargo.EJECUTIVO,
                     PORCENTAJE_EJECUTIVO,BigDecimal.ZERO, fechaPagoReal);
         }
 
         LocalDate finPlazoApremio = fechaApremio.plusDays(PLAZO_DIAS_TRAS_APREMIO);//apremio notificado - nueva fecha 20 dias despues//
 
         if (!fechaPagoReal.isAfter(finPlazoApremio)){//Si se paga antes del plazo de apremio 10%//
-            return construirRecargo(recibo, Recargo.TipoRecargo.APREMIO_REDUCIDO,
+            return construir(recibo, Recargo.TipoRecargo.APREMIO_REDUCIDO,
                     PORCENTAJE_APREMIO_REDUCIDO,BigDecimal.ZERO, fechaPagoReal);
         }
 
         BigDecimal intereses = calcularInteresesDemora(recibo, fechaPagoReal);//si no 20% sumand intereses aparte//
-        return construirRecargo(recibo, Recargo.TipoRecargo.APREMIO_ORDINARIO,
+        return construir(recibo, Recargo.TipoRecargo.APREMIO_ORDINARIO,
                 PORCENTAJE_APREMIO_ORDINARIO, intereses, fechaPagoReal);
     }
 
@@ -61,14 +73,15 @@ public class RecargoService {
                 .setScale(2,RoundingMode.HALF_UP);
     }
 
-    private Recargo construirRecargo(Recibo recibo, Recargo.TipoRecargo tipo,
-                                     BigDecimal porcentaje, BigDecimal intereses,
-                                     LocalDate fechaCalculo){
+    // construye el objeto Recargo SIN guardarlo - eso lo decide quien llame a este metodo//
+    private Recargo construir(Recibo recibo, Recargo.TipoRecargo tipo,
+                              BigDecimal porcentaje, BigDecimal intereses,
+                              LocalDate fechaCalculo){
         BigDecimal importeRecargo = recibo.getImporte()//calcular importe
                 .multiply(porcentaje)
                 .setScale(2,RoundingMode.HALF_UP);
 
-        Recargo recargo = Recargo.builder()//construir recargo//
+        return Recargo.builder()//construir recargo, ya no guarda aqui//
                 .tipo(tipo)
                 .porcentaje(porcentaje.multiply(new BigDecimal("100")))// si tenemos 0.05 sube a 5 %//
                 .importeCalculado(importeRecargo)
@@ -76,7 +89,6 @@ public class RecargoService {
                 .fechaCalculo(fechaCalculo)
                 .recibo(recibo)
                 .build();
-        return recargoRepository.save(recargo);
     }
 
 }
